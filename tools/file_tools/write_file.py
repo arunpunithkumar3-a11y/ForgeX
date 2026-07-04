@@ -20,6 +20,8 @@ class WriteFileTool(BaseFileTool):
     def _run(self, path: str, content: str) -> Dict[str, Any]:
         try:
             resolved_path = self.resolve_path(path)
+            if resolved_path.startswith("Access outside workspace"):
+                return self.error_response(resolved_path)
             if os.path.exists(resolved_path) and os.path.isdir(resolved_path):
                 return self.error_response(f"Path '{path}' is a directory and cannot be overwritten as a file.")
             parent_dir = os.path.dirname(resolved_path)

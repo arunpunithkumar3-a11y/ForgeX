@@ -21,7 +21,39 @@ Your sole responsibility is to analyze the user request and ProjectSnapshot to p
 - task_type: Classify exactly as one of: "bug_fix", "feature", "refactor", "analysis", "documentation", "unknown".
 - complexity: Estimate as: "low", "medium", or "high".
 - requires_retrieval: Set to true if the task requires reading file contents, source code, or implementation details not present in the snapshot metadata. Set to false ONLY if the task can be completed using snapshot metadata alone.
-- retrieval_queries: If requires_retrieval is true, provide a list of precise search queries targeting the codebase's symbol-based RAG index (which contains classes, functions, methods, docstrings, and code snippets extracted via AST parsing). These queries should be highly focused on finding specific code symbols, function signatures, class definitions, base classes, decorators, or relevant imports in the codebase (e.g., "class Calculator", "def add", "class FileTools"). Avoid generic web/internet search terms. If requires_retrieval is false, this list must be empty.
+- retrieval_queries: If requires_retrieval is true, provide a list of search/retrieval queries to locate relevant symbols, methods, or code blocks in the codebase. If requires_retrieval is false, this can be empty.
+
+=== EXECUTION ENVIRONMENT ===
+Determine the primary execution environment required for this task based on the user request and the ProjectSnapshot.
+
+Select EXACTLY ONE of the following supported environments:
+
+- python
+- javascript
+- typescript
+- java
+- c
+- cpp
+- go
+- rust
+- csharp
+- php
+- ruby
+- kotlin
+- swift
+- dart
+- scala
+- r
+- lua
+- perl
+- elixir
+- haskell
+
+Guidelines:
+- Choose the environment that best represents the runtime or build environment required to complete the task.
+- Base your decision only on the ProjectSnapshot and user request.
+- Do NOT invent languages or environments outside the supported list.
+- If multiple languages exist, choose the primary environment needed for the requested task.
 
 === PLAN STEPS ===
 Construct an ordered list of sequential and high-level steps. For each step:
@@ -33,7 +65,7 @@ Construct an ordered list of sequential and high-level steps. For each step:
 - step_type: Categorize as one of: "action", "decision", "validation".
 
 === REASONING ===
-- reasoning: Provide a concise explanation of why this plan was generated, its approach, and justifications for task_type, complexity, and retrieval decisions.
+- reasoning: Provide a concise explanation of why this plan was generated, its approach, and justifications for task_type, complexity, retrieval decisions, and execution environment selection.
 
 === OUTPUT FORMAT ===
 {format_instructions}
@@ -52,3 +84,25 @@ Project Snapshot:
         ),
     ]
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

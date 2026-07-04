@@ -23,6 +23,8 @@ class ListDirectoryTool(BaseFileTool):
     def _run(self, path: str = ".") -> Dict[str, Any]:
         try:
             resolved_path = self.resolve_path(path)
+            if resolved_path.startswith("Access outside workspace"):
+                return self.error_response(resolved_path)
             if not os.path.exists(resolved_path):
                 return self.error_response(f"Directory '{path}' does not exist.")
             if not os.path.isdir(resolved_path):
@@ -34,12 +36,11 @@ class ListDirectoryTool(BaseFileTool):
                 dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
                 for d in dirs:
                     abs_dir = os.path.join(root, d)
-                    try:
-                        self.resolve_path(os.path.relpath(abs_dir, ws_path))
-                        rel_dir = os.path.relpath(abs_dir, ws_path).replace("\\", "/")
-                        folders.append(rel_dir)
-                    except ValueError:
+                    res_path = self.resolve_path(os.path.relpath(abs_dir, ws_path))
+                    if res_path.startswith("Access outside workspace"):
                         continue
+                    rel_dir = os.path.relpath(abs_dir, ws_path).replace("\\", "/")
+                    folders.append(rel_dir)
                 for f in filenames:
                     if f in IGNORE_FILES:
                         continue
@@ -47,12 +48,11 @@ class ListDirectoryTool(BaseFileTool):
                     if ext in IGNORE_EXTENSIONS:
                         continue
                     abs_file = os.path.join(root, f)
-                    try:
-                        self.resolve_path(os.path.relpath(abs_file, ws_path))
-                        rel_file = os.path.relpath(abs_file, ws_path).replace("\\", "/")
-                        files.append(rel_file)
-                    except ValueError:
+                    res_path = self.resolve_path(os.path.relpath(abs_file, ws_path))
+                    if res_path.startswith("Access outside workspace"):
                         continue
+                    rel_file = os.path.relpath(abs_file, ws_path).replace("\\", "/")
+                    files.append(rel_file)
             folders.sort()
             files.sort()
             return self.success_response(

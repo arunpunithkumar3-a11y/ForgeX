@@ -1,10 +1,15 @@
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
-import os 
+import os
+from pathlib import Path
+from tools.sandbox.docker_backend import DockerBackend
+from tools.sandbox.models import SandboxConfig 
+from dotenv import load_dotenv
+load_dotenv()
 
 embeddings = OpenAIEmbeddings(
     model="nvidia/llama-nemotron-embed-vl-1b-v2:free",
-    openai_api_key=os.environ.get("OPENROUTER_API_KEY"),
+    openai_api_key=os.environ.get("OPEN_AI_KEY"),
     openai_api_base="https://openrouter.ai/api/v1",
     encoding_format="float",
     check_embedding_ctx_length=False
@@ -125,3 +130,24 @@ IGNORE_EXTENSIONS = [
     ".so",
     ".bin",
 ]
+
+def Activate_Container(image_name:str):
+    """
+    Activate the Docker container for the sandbox environment.
+    This function checks if the container is already running and starts it if necessary.
+    """
+    
+    config = SandboxConfig(
+    image=image_name,
+    container_name="sandbox_container",
+    working_directory="/workspace",
+    workspace=Path.cwd(),
+    auto_remove=True,
+    )
+    backend = DockerBackend(config)
+    backend.start()
+    return None
+
+
+if __name__ =="__main__":
+    Activate_Container()

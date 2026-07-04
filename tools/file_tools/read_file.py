@@ -18,6 +18,8 @@ class ReadFileTool(BaseFileTool):
     def _run(self, path: str) -> Dict[str, Any]:
         try:
             resolved_path = self.resolve_path(path)
+            if resolved_path.startswith("Access outside workspace"):
+                return self.error_response(resolved_path)
             if not os.path.exists(resolved_path):
                 return self.error_response(f"File '{path}' does not exist.")
             if not os.path.isfile(resolved_path):

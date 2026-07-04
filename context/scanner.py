@@ -18,83 +18,91 @@ class ScanRepo:
         self.dirs_list = []
 
     def scan(self) -> ProjectSnapshot:
+        try:
+            for root, dirs, files in os.walk(self.root_dir):
 
-        for root, dirs, files in os.walk(self.root_dir):
+                dirs[:] = [
+                    d for d in dirs
+                    if d not in IGNORE_DIRS
+                ]
 
-            dirs[:] = [
-                d for d in dirs
-                if d not in IGNORE_DIRS
-            ]
+                for d in dirs:
+                    dir_abs_path = os.path.join(root, d)
 
-            for d in dirs:
-                dir_abs_path = os.path.join(root, d)
-
-                dir_rel_path = (
-                    os.path.relpath(
-                        dir_abs_path,
-                        self.abs_path
+                    dir_rel_path = (
+                        os.path.relpath(
+                            dir_abs_path,
+                            self.abs_path
+                        )
+                        .replace("\\", "/")
                     )
-                    .replace("\\", "/")
-                )
 
-                self.dirs_list.append(dir_rel_path)
+                    self.dirs_list.append(dir_rel_path)
 
-            for file in files:
+                for file in files:
 
-                if file in IGNORE_FILES:
-                    continue
+                    if file in IGNORE_FILES:
+                        continue
 
-                ext = os.path.splitext(file)[1].lower()
+                    ext = os.path.splitext(file)[1].lower()
 
-                if ext in IGNORE_EXTENSIONS:
-                    continue
+                    if ext in IGNORE_EXTENSIONS:
+                        continue
 
-                file_abs_path = os.path.join(root, file)
+                    file_abs_path = os.path.join(root, file)
 
-                file_rel_path = (
-                    os.path.relpath(
-                        file_abs_path,
-                        self.abs_path
+                    file_rel_path = (
+                        os.path.relpath(
+                            file_abs_path,
+                            self.abs_path
+                        )
+                        .replace("\\", "/")
                     )
-                    .replace("\\", "/")
-                )
-                try:
-                    file_size = os.path.getsize(file_abs_path)
+                    try:
+                        file_size = os.path.getsize(file_abs_path)
 
-                    with open(
-                        file_abs_path,
-                        "r",
-                        encoding="utf-8",
-                        errors="ignore"
-                    ) as f:
-                        lines_count = sum(1 for _ in f)
+                        with open(
+                            file_abs_path,
+                            "r",
+                            encoding="utf-8",
+                            errors="ignore"
+                        ) as f:
+                            lines_count = sum(1 for _ in f)
 
-                except OSError:
-                    continue
+                    except OSError:
+                        continue
 
-                if ext == '.py':
-                    from dataclasses import asdict
-                    data = asdict(extract_metadata_from_file(file_rel_path))
-                else:
-                    data = {"imports": [], "full_imports":[],"symbols": []}
+                    if ext == '.py':
+                        from dataclasses import asdict
+                        data = asdict(extract_metadata_from_file(file_rel_path))
+                    else:
+                        data = {"imports": [], "full_imports":[],"symbols": []}
 
-                self.files_list.append(
-                    FileInfo(
-                        path=file_rel_path,
-                        extension=ext,
-                        size_bytes=file_size,
-                        lines_count=lines_count,
-                        imports=data["imports"],
-                        full_imports=data["full_imports"],
-                        symbols=data["symbols"]
+                    self.files_list.append(
+                        FileInfo(
+                            path=file_rel_path,
+                            extension=ext,
+                            size_bytes=file_size,
+                            lines_count=lines_count,
+                            imports=data["imports"],
+                            full_imports=data["full_imports"],
+                            symbols=data["symbols"]
 
+                        )
                     )
-                )
 
-        return ProjectSnapshot(
-            root_path=self.abs_path,
-            files=self.files_list,
-            directories=self.dirs_list,
-            total_files=len(self.files_list),
-            total_directories=len(self.dirs_list),
-        )
+            return ProjectSnapshot(
+                root_path=self.abs_path,
+                files=self.files_list,
+                directories=self.dirs_list,
+                total_files=len(self.files_list),
+                total_directories=len(self.dirs_list),
+            )
+        except Exception:
+            return ProjectSnapshot(
+                root_path=self.abs_path,
+                files=[],
+                directories=[],
+                total_files=0,
+                total_directories=0,
+            )

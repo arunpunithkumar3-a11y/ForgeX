@@ -20,6 +20,8 @@ class CreateFileTool(BaseFileTool):
     def _run(self, path: str, content: str = "", overwrite: bool = False) -> Dict[str, Any]:
         try:
             resolved_path = self.resolve_path(path)
+            if resolved_path.startswith("Access outside workspace"):
+                return self.error_response(resolved_path)
             if os.path.exists(resolved_path):
                 if not overwrite:
                     return self.error_response(f"File '{path}' already exists. Set overwrite=True to overwrite.")

@@ -22,7 +22,11 @@ class MoveFileTool(BaseFileTool):
     def _run(self, source: str, destination: str, overwrite: bool = False) -> Dict[str, Any]:
         try:
             resolved_source = self.resolve_path(source)
+            if resolved_source.startswith("Access outside workspace"):
+                return self.error_response(resolved_source)
             resolved_dest = self.resolve_path(destination)
+            if resolved_dest.startswith("Access outside workspace"):
+                return self.error_response(resolved_dest)
             if not os.path.exists(resolved_source):
                 return self.error_response(f"Source file '{source}' does not exist.")
             if not os.path.isfile(resolved_source):

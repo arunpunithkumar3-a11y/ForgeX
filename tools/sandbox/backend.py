@@ -1,35 +1,34 @@
 from abc import ABC, abstractmethod
-from tools.sandbox.models import CommandResult,SandboxStatus
+from tools.sandbox.models import CommandResult, SandboxStatus
 
 
 class SandboxBackend(ABC):
     """
     Abstract interface for all sandbox implementations.
-
-    Every sandbox backend (Docker, Kubernetes, SSH, etc.)
-    must implement this interface.
     """
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
+
 
     @abstractmethod
     def start(self) -> None:
-        """
-        Start the sandbox environment.
-        """
-        raise NotImplementedError
+        """Start the sandbox environment."""
+        ...
 
     @abstractmethod
     def stop(self) -> None:
-        """
-        Stop the sandbox environment.
-        """
-        raise NotImplementedError
+        """Stop the sandbox environment."""
+        ...
 
     @abstractmethod
     def remove(self) -> None:
-        """
-        Remove the sandbox permanently.
-        """
-        raise NotImplementedError
+        """Remove the sandbox permanently."""
+        ...
 
     @abstractmethod
     def execute(
@@ -38,14 +37,6 @@ class SandboxBackend(ABC):
         timeout: int | None = None,
         working_directory: str | None = None,
     ) -> CommandResult:
-        """
-        Execute a shell command inside the sandbox.
-        """
-        raise NotImplementedError
+        """Execute a shell command inside the sandbox."""
+        ...
 
-    @abstractmethod
-    def get_status(self) -> SandboxStatus:
-        """
-        Return the current sandbox status.
-        """
-        raise NotImplementedError

@@ -11,9 +11,9 @@ class BaseFileTool(BaseTool):
         try:
             common = os.path.commonpath([abs_workspace, abs_target])
         except ValueError:
-            raise ValueError(f"Access outside workspace is not allowed: '{path}'")
+            return f"Access outside workspace is not allowed: '{path}'"
         if common != abs_workspace:
-            raise ValueError(f"Access outside workspace is not allowed: '{path}'")
+            return f"Access outside workspace is not allowed: '{path}'"
         return abs_target
 
     def success_response(self, message: str, **kwargs: Any) -> Dict[str, Any]:
@@ -25,4 +25,4 @@ class BaseFileTool(BaseTool):
         return {"success": False, "error": error_message}
 
     async def _arun(self, *args: Any, **kwargs: Any) -> Any:
-        raise NotImplementedError("Async execution is not implemented.")
+        return "Async execution is not implemented."

@@ -1,6 +1,7 @@
 import sys
 import time
 from pathlib import Path
+
 # Add project root to sys.path so 'tools' can be imported when running script directly
 project_root = str(Path(__file__).resolve().parents[2])
 if project_root not in sys.path:
@@ -8,91 +9,113 @@ if project_root not in sys.path:
 
 import docker
 from docker.models.containers import Container
-from tools.sandbox.models import SandboxConfig
 from tools.sandbox.backend import SandboxBackend
-import os 
-
-from docker import DockerClient
-from docker.models.containers import Container
-
-from tools.sandbox.models import CommandResult, SandboxStatus
+from tools.sandbox.models import SandboxConfig, CommandResult, SandboxStatus
 
 
 class DockerBackend(SandboxBackend):
-
     def __init__(self, config: SandboxConfig):
         self.config = config
-        self.client: DockerClient = self._create_client()
+        self._client: docker.DockerClient | None = None
         self.container: Container | None = None
-        if self.config.container_name:
+
+    @property
+    def client(self) -> docker.DockerClient | None:
+        """
+        Lazily initialize the Docker client connected to the local Docker daemon.
+        """
+        if self._client is None:
             try:
-                self.container = self.client.containers.get(self.config.container_name)
-            except docker.errors.NotFound:
-                pass
+                self._client = docker.from_env()
+            except Exception as e:
+                sys.stderr.write(f"Failed to connect to Docker daemon: {e}\n")
+                return None
+        return self._client
 
-    def _create_client(self) -> DockerClient:
-        """
-        Create a Docker client connected to the local Docker daemon.
-        """
-        return docker.from_env()
-
-    def _create_container(self) -> Container:
+    def _create_container(self) -> Container | None:
         """
         Create a Docker container based on the sandbox configuration.
         """
-        return self.client.containers.create(
-            image=self.config.image,
-            name=self.config.container_name,
-            command=["tail", "-f", "/dev/null"],
-            working_dir=self.config.working_directory,
-            volumes={
-                str(self.config.workspace): {
-                    "bind": self.config.working_directory,
-                    "mode": "rw",
-                }
-            },
-            tty=True,
-            detach=True,
-            auto_remove=self.config.auto_remove,
-        )
-    def _require_running_container(self) -> Container:
-        if self.container is None:
-            raise RuntimeError("Sandbox has not been started.")
+        client = self.client
+        if not client:
+            return None
+        try:
+            return client.containers.create(
+                image=self.config.image,
+                name=self.config.container_name,
+                command=["tail", "-f", "/dev/null"],
+                working_dir=self.config.working_directory,
+                volumes={
+                    str(self.config.workspace): {
+                        "bind": self.config.working_directory,
+                        "mode": "rw",
+                    }
+                },
+                tty=True,
+                detach=True,
+                auto_remove=self.config.auto_remove,
+            )
+        except Exception as e:
+            sys.stderr.write(f"Failed to create container: {e}\n")
+            return None
 
-        self.container.reload()
+    def _require_running_container(self) -> Container | None:
+        """
+        Ensure the container is running and return it.
+        """
+        client = self.client
+        if not client:
+            return None
+
+        if self.container is None and self.config.container_name:
+            try:
+                self.container = client.containers.get(self.config.container_name)
+            except Exception:
+                pass
+
+        if self.container is None:
+            return None
+
+        try:
+            self.container.reload()
+        except Exception:
+            self.container = None
+            return None
 
         if self.container.status != "running":
-            raise RuntimeError("Sandbox container is not running.")
+            return None
 
         return self.container
+
     def start(self) -> None:
         """
         Create and start the sandbox container.
         """
+        client = self.client
+        if not client:
+            return
 
-        if self.container:
-            try:
+        try:
+            if self.container:
+                try:
+                    self.container.reload()
+                except Exception:
+                    self.container = None
+
+            if not self.container and self.config.container_name:
+                try:
+                    self.container = client.containers.get(self.config.container_name)
+                except Exception:
+                    pass
+
+            if not self.container:
+                self.container = self._create_container()
+
+            if self.container and self.container.status != "running":
+                self.container.start()
                 self.container.reload()
-            except docker.errors.NotFound:
-                self.container = None
-
-
-        if self.container is None and self.config.container_name:
-            try:
-                self.container = self.client.containers.get(self.config.container_name)
-            except docker.errors.NotFound:
-                pass
-
-        if self.container is None:
-            self.container = self._create_container()
-
-        if self.container.status != "running":
-            self.container.start()
-            try:
-                self.container.reload()
-            except docker.errors.NotFound:
-
-                self.container = None
+        except Exception as e:
+            sys.stderr.write(f"Error starting sandbox: {e}\n")
 
     def stop(self) -> None:
         """
@@ -101,62 +124,24 @@ class DockerBackend(SandboxBackend):
         if self.container:
             try:
                 self.container.stop()
-                try:
-                    self.container.reload()
-                except (docker.errors.NotFound, docker.errors.APIError):
-                    self.container = None
-            except (docker.errors.NotFound, docker.errors.APIError):
+            except Exception as e:
+                sys.stderr.write(f"Error stopping sandbox: {e}\n")
+            finally:
                 self.container = None
 
     def remove(self) -> None:
         """
         Permanently remove the sandbox container.
         """
-        if self.container is None:
-            return
+        if self.container:
+            try:
+                self.container.remove(force=True)
+            except Exception as e:
+                sys.stderr.write(f"Error removing sandbox: {e}\n")
+            finally:
+                self.container = None
 
-        try:
-            self.container.remove(force=True)
-        except docker.errors.NotFound:
-            pass
-        except docker.errors.APIError as e:
 
-            if "removal" in str(e) and "in progress" in str(e):
-                pass
-            else:
-                raise e
-        finally:
-            self.container = None
-    def get_status(self) -> SandboxStatus:
-        """
-        Return the current sandbox status.
-        """
-        if self.container is None:
-            if self.config.container_name:
-                try:
-                    self.container = self.client.containers.get(self.config.container_name)
-                except docker.errors.NotFound:
-                    return SandboxStatus.REMOVED
-            else:
-                return SandboxStatus.REMOVED
-
-        try:
-            self.container.reload()
-            status_map = {
-                "created": SandboxStatus.CREATED,
-                "running": SandboxStatus.RUNNING,
-                "paused": SandboxStatus.RUNNING,
-                "restarting": SandboxStatus.RUNNING,
-                "removing": SandboxStatus.REMOVED,
-                "exited": SandboxStatus.STOPPED,
-                "dead": SandboxStatus.ERROR,
-            }
-            return status_map.get(self.container.status, SandboxStatus.ERROR)
-        except docker.errors.NotFound:
-            self.container = None
-            return SandboxStatus.REMOVED
-        except Exception:
-            return SandboxStatus.ERROR
 
     def execute(
         self,
@@ -167,13 +152,24 @@ class DockerBackend(SandboxBackend):
         """
         Execute a shell command inside the sandbox container.
         """
-        container = self._require_running_container()
         start = time.perf_counter()
-        
+        container = self._require_running_container()
+        if not container:
+            return CommandResult(
+                success=False,
+                command=command,
+                exit_code=-1,
+                stdout="",
+                stderr="Sandbox error: Sandbox container is not running or available.",
+                duration_ms=0.0
+            )
+
         exec_timeout = timeout if timeout is not None else self.config.timeout
-        # Wrap command in GNU timeout to enforce timeout limit inside the container
-        cmd_to_run = ["timeout", str(exec_timeout), "sh", "-c", command]
-        
+        if exec_timeout:
+            cmd_to_run = ["timeout", str(exec_timeout), "sh", "-c", command]
+        else:
+            cmd_to_run = ["sh", "-c", command]
+
         try:
             result = container.exec_run(
                 cmd=cmd_to_run,
@@ -184,18 +180,26 @@ class DockerBackend(SandboxBackend):
             )
             duration = (time.perf_counter() - start) * 1000
             stdout_bytes, stderr_bytes = result.output or (None, None)
-            stdout = (stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else "")
-            stderr = (stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else "")
-        except docker.errors.APIError as e:
-            raise RuntimeError(f"Error occurred while executing command: {e}")
-        return CommandResult(
-            success=result.exit_code == 0,
-            command=command,
-            exit_code=result.exit_code,
-            stdout=stdout,
-            stderr=stderr,
-            duration_ms=duration
-        )
+            stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
+            stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
+            return CommandResult(
+                success=result.exit_code == 0,
+                command=command,
+                exit_code=result.exit_code,
+                stdout=stdout,
+                stderr=stderr,
+                duration_ms=duration,
+            )
+        except Exception as e:
+            duration = (time.perf_counter() - start) * 1000
+            return CommandResult(
+                success=False,
+                command=command,
+                exit_code=-1,
+                stdout="",
+                stderr=f"Docker execution error: {e}",
+                duration_ms=duration,
+            )
 
 
 config = SandboxConfig(
@@ -207,34 +211,33 @@ config = SandboxConfig(
 )
 
 if __name__ == "__main__":
-    backend = DockerBackend(config)
+    # Demonstrate usage with context manager
+    print("Initializing Sandbox Backend...")
     try:
-        print("Starting sandbox...")
-        backend.start()
-        print("Sandbox started.")
+        with DockerBackend(config) as backend:
+            print("Sandbox started.")
 
-        print("\nExecuting command 1 (should succeed):")
-        res1 = backend.execute("git status", timeout=120)
-        print("CommandResult 1:")
-        print(f"  Success: {res1.success}")
-        print(f"  Exit code: {res1.exit_code}")
-        print(f"  Stdout: {res1.stdout.strip()}")
-        print(f"  Stderr: {res1.stderr.strip()}")
-        print(f"  Duration: {res1.duration_ms:.2f}ms")
+            print("\nExecuting command 1 (should fail gracefully if not started):")
+            res1 = backend.execute("python --version", timeout=120)
+            print("CommandResult 1:")
+            print(f"  Success: {res1.success}")
+            print(f"  Exit code: {res1.exit_code}")
+            print(f"  Stdout: {res1.stdout.strip()}")
+            print(f"  Stderr: {res1.stderr.strip()}")
+            print(f"  Duration: {res1.duration_ms:.2f}ms")
 
-        print("\nExecuting command 2 (should timeout after 2 seconds):")
-        res2 = backend.execute("sleep 10", timeout=2)
-        print("CommandResult 2:")
-        print(f"  Success: {res2.success}")
-        print(f"  Exit code: {res2.exit_code}")
-        print(f"  Stdout: {res2.stdout.strip()}")
-        print(f"  Stderr: {res2.stderr.strip()}")
-        print(f"  Duration: {res2.duration_ms:.2f}ms")
-    finally:
-        print("\nStopping and removing sandbox...")
-        """ backend.stop()
-        backend.remove()"""
-        print("Done.")
+            print("\nExecuting command 2 (should fail gracefully if not started):")
+            res2 = backend.execute("sleep 10", timeout=2)
+            print("CommandResult 2:")
+            print(f"  Success: {res2.success}")
+            print(f"  Exit code: {res2.exit_code}")
+            print(f"  Stdout: {res2.stdout.strip()}")
+            print(f"  Stderr: {res2.stderr.strip()}")
+            print(f"  Duration: {res2.duration_ms:.2f}ms")
+
+    except Exception as e:
+        print(f"Unexpected error occurred: {e}")
+    print("Done.")
 
 
 

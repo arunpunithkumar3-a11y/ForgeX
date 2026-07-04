@@ -23,6 +23,28 @@ class ExecutionPlan(BaseModel):
     steps:List[PlanStep]=Field(default_factory=list,description="Ordered list of steps required to execute the plan")
     requires_retrieval:bool=Field(...,description="Whether external retrieval is required")
     reasoning:str=Field(...,description="Explanation of why this plan was generated and its approach")
+    Environment:Literal[
+    "python",
+    "javascript",
+    "typescript",
+    "java",
+    "c",
+    "cpp",
+    "go",
+    "rust",
+    "csharp",
+    "php",
+    "ruby",
+    "kotlin",
+    "swift",
+    "dart",
+    "scala",
+    "r",
+    "lua",
+    "perl",
+    "elixir",
+    "haskell",
+]=Field(...,description="Gives the programming language of the project")
 
 
 class SymbolInfo(BaseModel):
