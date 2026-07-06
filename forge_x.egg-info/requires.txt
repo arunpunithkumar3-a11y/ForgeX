@@ -1,3 +1,4 @@
+platformdirs
 langchain-core
 langchain-openai
 langchain-community

@@ -4,7 +4,10 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings
 from utils import embeddings
+
+from langchain_core.documents import Document
 
 
 def clean_file_metadata_for_vector_db(
@@ -98,69 +101,62 @@ Code:
 
 
 def build_index(root_dir: str = "."):
-    try:
-        docs = []
+    docs = []
 
-        main_path = os.path.abspath(root_dir)
+    main_path = os.path.abspath(root_dir)
 
-        IGNORE_DIRS = {
-            ".git",
-            "__pycache__",
-            "venv",
-            ".venv",
-            "node_modules",
-            "chroma_db",
-        }
+    IGNORE_DIRS = {
+        ".git",
+        "__pycache__",
+        "venv",
+        ".venv",
+        "node_modules",
+        "chroma_db",
+    }
 
-        for root, dirs, files in os.walk(root_dir):
+    for root, dirs, files in os.walk(root_dir):
 
-            dirs[:] = [
-                d for d in dirs
-                if d not in IGNORE_DIRS
-            ]
+        dirs[:] = [
+            d for d in dirs
+            if d not in IGNORE_DIRS
+        ]
 
-            for file in files:
+        for file in files:
 
-                if not file.endswith(".py"):
-                    continue
+            if not file.endswith(".py"):
+                continue
 
-                file_abs_path = os.path.join(root, file)
+            file_abs_path = os.path.join(root, file)
 
-                file_rel_path = (
-                    os.path.relpath(
-                        file_abs_path,
-                        main_path
-                    )
-                    .replace("\\", "/")
+            file_rel_path = (
+                os.path.relpath(
+                    file_abs_path,
+                    main_path
                 )
+                .replace("\\", "/")
+            )
 
-                data = extract_metadata_from_file(
-                    file_abs_path
+            data = extract_metadata_from_file(
+                file_abs_path
+            )
+
+            docs.extend(
+                clean_file_metadata_for_vector_db(
+                    data,
+                    file_path=file_rel_path,
                 )
+            )
 
-                docs.extend(
-                    clean_file_metadata_for_vector_db(
-                        data,
-                        file_path=file_rel_path,
-                    )
-                )
+    vector_store = Chroma.from_documents(
+        docs,
+        embeddings,
+        persist_directory="./chroma_db",
+    )
 
-        vector_store = Chroma.from_documents(
-            docs,
-            embeddings,
-            persist_directory="./chroma_db",
-        )
-
-        return vector_store.as_retriever(
-            search_type="mmr",
-            search_kwargs={"k": 6},
-        )
-    except Exception:
-        return None
+    return vector_store.as_retriever(
+        search_type="mmr",
+        search_kwargs={"k": 6},
+    )
 if __name__ =="__main__":
     r = build_index()
-    if r is not None:
-        try:
-            print(r.invoke("i need nodes.py"))
-        except Exception:
-            pass
+    print(r.invoke("i need nodes.py"))
