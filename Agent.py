@@ -1,44 +1,28 @@
-import questionary
-import typer
+import platform
+import sys
 
-BANNER_TEXT = r"""
-███████╗ ██████╗ ██████╗  ██████╗ ███████╗██╗  ██╗
-██╔════╝██╔═══██╗██╔══██╗██╔════╝ ██╔════╝╚██╗██╔╝
-█████╗  ██║   ██║██████╔╝██║  ███╗█████╗   ╚███╔╝ 
-██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝   ██╔██╗ 
-██║     ╚██████╔╝██║  ██║╚██████╔╝███████╗██╔╝ ██╗
-╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
-"""
+from rich import box
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+# create a Console instance
+console = Console()
+
+# create a table
+sys_table = Table(show_header=False, box=False)
+sys_table.add_row("[bold green]ForgeX version[/bold green]", "v0.1.0")
+sys_table.add_row("[bold green]Python version[/bold green]", sys.version.split()[0])
+sys_table.add_row("[bold #875fdf]Platform[/bold #875fdf]", platform.platform())
 
 
-def main(name: str = typer.Option(...), age: int = typer.Option(...)):
-    print(name)
-    print(age)
+panel = Panel(
+    sys_table,
+    title="[bold #875fdf]⚙️ FORGEX SYSTEM INFORMATION[/bold #875fdf]",
+    border_style="#875fdf",
+    box=box.ROUNDED,
+    expand=False,
+    padding=(1, 2),
+)
 
-
-if __name__ == "__main__":
-    import questionary
-
-name = questionary.text("Name:").ask()
-
-age = questionary.text("Age:").ask()
-
-language = questionary.select(
-    "Favorite language:", choices=["Python", "Java", "Go", "Rust"]
-).ask()
-
-skills = questionary.checkbox(
-    "Select your skills:", choices=["Git", "Docker", "Linux", "AWS"]
-).ask()
-
-confirm = questionary.confirm("Submit?").ask()
-
-if confirm:
-    print("\nUser Information")
-    print("----------------")
-    print("Name:", name)
-    print("Age:", age)
-    print("Language:", language)
-    print("Skills:", skills)
-else:
-    print("Cancelled")
+console.print(panel)
