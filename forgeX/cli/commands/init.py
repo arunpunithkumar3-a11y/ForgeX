@@ -2,6 +2,10 @@ import questionary
 from rich.console import Console
 
 from forgeX.config.constants import PROVIDERS
+from forgeX.config.env_manager import EnvironmentManager
+from forgeX.config.manager import ConfigManager
+from forgeX.config.models import ForgeXConfig, LLMConfig
+from forgeX.config.validator import ConfigValidator
 
 console = Console()
 
@@ -55,6 +59,26 @@ def ask_api_key(provider: str) -> str | None:
     return api_key.strip()
 
 
+def save_config(provider: str, model: str) -> None:
+    manager = ConfigManager()
+    llm_config = LLMConfig(provider=provider, model=model)
+
+    configure = ForgeXConfig(llm=llm_config)
+    manager.save(configure)
+
+
+def save_api_key(provider: str, api_key: str) -> None:
+    env_manager = EnvironmentManager()
+    env_manager.set_api_key(provider=provider, api_key=api_key)
+
+
+def validate_config(provider: str, model: str) -> None:
+    validator = ConfigValidator()
+    validator.validate(
+        config=ForgeXConfig(llm=LLMConfig(provider=provider, model=model))
+    )
+
+
 def init() -> None:
     try:
         show_banner()
@@ -62,7 +86,9 @@ def init() -> None:
         provider = ask_provider()
         model = ask_model(provider)
         api_key = ask_api_key(provider)
-
+        save_config(provider, model)
+        save_api_key(provider, api_key)
+        validate_config(provider, model)
         console.print()
         console.print("[bold green]✓ Information collected successfully![/bold green]")
         console.print(f"Provider : {provider}")

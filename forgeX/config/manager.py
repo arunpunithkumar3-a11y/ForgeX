@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import tomlkit
 
 from forgeX.config.constants import (
@@ -10,12 +8,10 @@ from forgeX.config.constants import (
 from forgeX.config.models import (
     ForgeXConfig,
     LLMConfig,
-    GenerationConfig,
 )
 
 
 class ConfigManager:
-
     def __init__(self):
 
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -39,17 +35,12 @@ class ConfigManager:
     def load(self) -> ForgeXConfig:
 
         with open(CONFIG_FILE, "r", encoding="utf-8") as file:
-
             data = tomlkit.load(file)
 
         return ForgeXConfig(
             llm=LLMConfig(
                 provider=data["llm"]["provider"],
                 model=data["llm"]["model"],
-            ),
-            generation=GenerationConfig(
-                temperature=data["generation"]["temperature"],
-                max_tokens=data["generation"]["max_tokens"],
             ),
         )
 
@@ -60,11 +51,6 @@ class ConfigManager:
         document["llm"] = {
             "provider": config.llm.provider,
             "model": config.llm.model,
-        }
-
-        document["generation"] = {
-            "temperature": config.generation.temperature,
-            "max_tokens": config.generation.max_tokens,
         }
 
         with open(CONFIG_FILE, "w", encoding="utf-8") as file:

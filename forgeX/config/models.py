@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
-
 # ============================================================================
 # Provider Metadata
 # ============================================================================
+
 
 @dataclass(slots=True, frozen=True)
 class ProviderMetadata:
@@ -18,6 +18,7 @@ class ProviderMetadata:
 # LLM Configuration
 # ============================================================================
 
+
 @dataclass(slots=True)
 class LLMConfig:
     provider: str = ""
@@ -28,17 +29,12 @@ class LLMConfig:
 # Generation Configuration
 # ============================================================================
 
-@dataclass(slots=True)
-class GenerationConfig:
-    temperature: float = 0.2
-    max_tokens: int = 4096
-
 
 # ============================================================================
 # Root Configuration
 # ============================================================================
 
+
 @dataclass(slots=True)
 class ForgeXConfig:
     llm: LLMConfig = field(default_factory=LLMConfig)
-    generation: GenerationConfig = field(default_factory=GenerationConfig)

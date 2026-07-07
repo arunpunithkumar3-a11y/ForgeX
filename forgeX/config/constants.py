@@ -96,10 +96,6 @@ DEFAULT_CONFIG = {
         "provider": "",
         "model": "",
     },
-    "generation": {
-        "temperature": 0.2,
-        "max_tokens": 4096,
-    },
 }
 
 
