@@ -39,6 +39,7 @@ PROVIDERS = {
         api_key_env="OPENROUTER_API_KEY",
         requires_api_key=True,
         base_url_env=None,
+        recommended_model="anthropic/claude-opus-4.1",
     ),
     "openai": ProviderMetadata(
         name="openai",
@@ -46,6 +47,7 @@ PROVIDERS = {
         api_key_env="OPENAI_API_KEY",
         requires_api_key=True,
         base_url_env=None,
+        recommended_model="gpt-5",
     ),
     "anthropic": ProviderMetadata(
         name="anthropic",
@@ -53,6 +55,7 @@ PROVIDERS = {
         api_key_env="ANTHROPIC_API_KEY",
         requires_api_key=True,
         base_url_env=None,
+        recommended_model="claude-opus-4.1",
     ),
     "google": ProviderMetadata(
         name="google",
@@ -60,6 +63,7 @@ PROVIDERS = {
         api_key_env="GOOGLE_API_KEY",
         requires_api_key=True,
         base_url_env=None,
+        recommended_model="gemini-2.5-pro",
     ),
     "groq": ProviderMetadata(
         name="groq",
@@ -67,6 +71,7 @@ PROVIDERS = {
         api_key_env="GROQ_API_KEY",
         requires_api_key=True,
         base_url_env=None,
+        recommended_model="kimi-k2-instruct",
     ),
     "nvidia": ProviderMetadata(
         name="nvidia",
@@ -74,6 +79,7 @@ PROVIDERS = {
         api_key_env="NVIDIA_API_KEY",
         requires_api_key=True,
         base_url_env=None,
+        recommended_model="kimi-k2-instruct",
     ),
     "ollama": ProviderMetadata(
         name="ollama",
@@ -81,6 +87,7 @@ PROVIDERS = {
         api_key_env=None,
         requires_api_key=False,
         base_url_env="OLLAMA_BASE_URL",
+        recommended_model="qwen3-coder",
     ),
 }
 

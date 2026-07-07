@@ -2,23 +2,28 @@ import platform
 import sys
 
 from rich import box
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-console = Console()
-panel = Panel(renderable=Table)
+from forgeX.cli.ui.console import console
 
 
-def version():
+def version() -> None:
+    """Display ForgeX version and system environment info."""
+    sys_table = Table(show_header=False, box=None, padding=(0, 2, 0, 0))
 
-    sys_table = Table(show_header=False, box=False)
+    arch_info = f"{platform.machine()} ({platform.architecture()[0]})"
 
-    sys_table.add_row("[bold green]ForgeX version[/bold green]", "v0.1.0")
-    sys_table.add_row("[bold green]Python version[/bold green]", sys.version.split()[0])
+    sys_table.add_row("[bold #875fdf]ForgeX version[/bold #875fdf]", "[white]v0.1.0[/white]")
     sys_table.add_row(
-        "[bold green]Platform[/bold green]", f"{platform.system()} {platform.release()}"
+        "[bold #875fdf]Python version[/bold #875fdf]", f"[white]{sys.version.split()[0]}[/white]"
     )
+    sys_table.add_row(
+        "[bold #875fdf]Platform[/bold #875fdf]",
+        f"[white]{platform.system()} {platform.release()}[/white]",
+    )
+    sys_table.add_row("[bold #875fdf]Architecture[/bold #875fdf]", f"[white]{arch_info}[/white]")
+
     panel = Panel(
         sys_table,
         title="[bold #875fdf]⚙️ ForgeX System Information[/bold #875fdf]",
@@ -29,3 +34,4 @@ def version():
     )
 
     console.print(panel)
+

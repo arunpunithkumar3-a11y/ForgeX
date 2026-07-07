@@ -12,6 +12,8 @@ class ProviderMetadata:
     api_key_env: str | None
     requires_api_key: bool
     base_url_env: str | None
+    recommended_model: str | None = None
+
 
 
 # ============================================================================

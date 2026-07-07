@@ -1,12 +1,21 @@
 import typer
 
+from forgeX.cli.commands.config import config_app
+from forgeX.cli.commands.doctor import doctor
 from forgeX.cli.commands.init import init
+from forgeX.cli.commands.models import models
+from forgeX.cli.commands.providers import providers
 from forgeX.cli.commands.version import version
 
 app = typer.Typer(help="ForgeX - AI Coding Agent")
 
 app.command()(init)
 app.command()(version)
+app.command()(providers)
+app.command()(models)
+app.command()(doctor)
+app.add_typer(config_app, name="config")
+
 
 
 @app.callback(invoke_without_command=True)
