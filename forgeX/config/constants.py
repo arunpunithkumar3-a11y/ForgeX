@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from platformdirs import user_config_dir
+
 from forgeX.config.models import ProviderMetadata
 
 # ============================================================================
