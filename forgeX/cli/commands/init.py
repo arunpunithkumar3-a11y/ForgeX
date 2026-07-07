@@ -1,11 +1,5 @@
 import questionary
 from rich.console import Console
-from forgeX.config.env_manager import EnvironmentManager
-from forgeX.config.manager import ConfigManager
-from forgeX.config.constants import PROVIDERS
-
-import questionary
-from rich.console import Console
 
 from forgeX.config.constants import PROVIDERS
 
@@ -39,9 +33,7 @@ def ask_provider() -> str:
 
 
 def ask_model(provider: str) -> str:
-    model = questionary.text(
-        f"Enter the model name for {provider}:"
-    ).ask()
+    model = questionary.text(f"Enter the model name for {provider}:").ask()
 
     if model is None:
         raise KeyboardInterrupt()
@@ -55,15 +47,12 @@ def ask_api_key(provider: str) -> str | None:
     if not provider_metadata.requires_api_key:
         return None
 
-    api_key = questionary.password(
-        f"Enter your {provider} API key:"
-    ).ask()
+    api_key = questionary.password(f"Enter your {provider} API key:").ask()
 
     if api_key is None:
         raise KeyboardInterrupt()
 
     return api_key.strip()
-
 
 
 def init() -> None:

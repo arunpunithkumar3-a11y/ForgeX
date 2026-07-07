@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from tools.sandbox.models import CommandResult, SandboxStatus
+
+from forgeX.tools.sandbox.models import CommandResult
 
 
 class SandboxBackend(ABC):
@@ -13,7 +14,6 @@ class SandboxBackend(ABC):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
-
 
     @abstractmethod
     def start(self) -> None:
@@ -39,4 +39,3 @@ class SandboxBackend(ABC):
     ) -> CommandResult:
         """Execute a shell command inside the sandbox."""
         ...
-

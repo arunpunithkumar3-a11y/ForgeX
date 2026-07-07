@@ -1,12 +1,8 @@
-import os 
+import os
+
+from forgeX.agents.Schemas import FileInfo, ProjectSnapshot
 from metadata_extractor import extract_metadata_from_file
-from utils import clean_file_metadata_for_vector_db,embeddings
-from langchain_community.vectorstores import Chroma
-from utils import IGNORE_DIRS,IGNORE_EXTENSIONS,IGNORE_FILES
-from agents.Schemas import FileInfo,ProjectSnapshot
-
-
-
+from utils import IGNORE_DIRS, IGNORE_EXTENSIONS, IGNORE_FILES
 
 
 class ScanRepo:
@@ -20,27 +16,18 @@ class ScanRepo:
     def scan(self) -> ProjectSnapshot:
         try:
             for root, dirs, files in os.walk(self.root_dir):
-
-                dirs[:] = [
-                    d for d in dirs
-                    if d not in IGNORE_DIRS
-                ]
+                dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
 
                 for d in dirs:
                     dir_abs_path = os.path.join(root, d)
 
-                    dir_rel_path = (
-                        os.path.relpath(
-                            dir_abs_path,
-                            self.abs_path
-                        )
-                        .replace("\\", "/")
+                    dir_rel_path = os.path.relpath(dir_abs_path, self.abs_path).replace(
+                        "\\", "/"
                     )
 
                     self.dirs_list.append(dir_rel_path)
 
                 for file in files:
-
                     if file in IGNORE_FILES:
                         continue
 
@@ -51,32 +38,26 @@ class ScanRepo:
 
                     file_abs_path = os.path.join(root, file)
 
-                    file_rel_path = (
-                        os.path.relpath(
-                            file_abs_path,
-                            self.abs_path
-                        )
-                        .replace("\\", "/")
-                    )
+                    file_rel_path = os.path.relpath(
+                        file_abs_path, self.abs_path
+                    ).replace("\\", "/")
                     try:
                         file_size = os.path.getsize(file_abs_path)
 
                         with open(
-                            file_abs_path,
-                            "r",
-                            encoding="utf-8",
-                            errors="ignore"
+                            file_abs_path, "r", encoding="utf-8", errors="ignore"
                         ) as f:
                             lines_count = sum(1 for _ in f)
 
                     except OSError:
                         continue
 
-                    if ext == '.py':
+                    if ext == ".py":
                         from dataclasses import asdict
+
                         data = asdict(extract_metadata_from_file(file_rel_path))
                     else:
-                        data = {"imports": [], "full_imports":[],"symbols": []}
+                        data = {"imports": [], "full_imports": [], "symbols": []}
 
                     self.files_list.append(
                         FileInfo(
@@ -86,8 +67,7 @@ class ScanRepo:
                             lines_count=lines_count,
                             imports=data["imports"],
                             full_imports=data["full_imports"],
-                            symbols=data["symbols"]
-
+                            symbols=data["symbols"],
                         )
                     )
 

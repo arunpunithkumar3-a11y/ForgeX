@@ -71,7 +71,7 @@ Construct an ordered list of sequential and high-level steps. For each step:
 {format_instructions}
 
 Return ONLY the structured output conforming to the schema. No markdown, explanations, or extra text.
-"""
+""",
         ),
         (
             "human",
@@ -80,29 +80,7 @@ Return ONLY the structured output conforming to the schema. No markdown, explana
 
 Project Snapshot:
 {project_snapshot}
-"""
+""",
         ),
     ]
 )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

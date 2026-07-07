@@ -1,50 +1,75 @@
-from pydantic import BaseModel, Field
-from typing import List, Literal,Dict,Optional,Union
+from typing import List, Literal, Optional
 
-
-from typing import List, Optional
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
+
 class PlanStep(BaseModel):
-    step_number:int=Field(...,description="Sequential number of the step")
-    title:str=Field(...,description="Short,descriptive title of the step")
-    description:str=Field(...,description="Detailed explanation of what this step involves")
-    depends_on:Optional[List[int]]=Field(default=None,description="List of step numbers this step depends on")
-    success_criteria:Optional[List[str]]=Field(default=None,description="Conditions that define successful completion of this step")
-    step_type:Optional[str]=Field(default="action",description="Type of step (e.g.,action,decision,validation)")
+    step_number: int = Field(..., description="Sequential number of the step")
+    title: str = Field(..., description="Short,descriptive title of the step")
+    description: str = Field(
+        ..., description="Detailed explanation of what this step involves"
+    )
+    depends_on: Optional[List[int]] = Field(
+        default=None, description="List of step numbers this step depends on"
+    )
+    success_criteria: Optional[List[str]] = Field(
+        default=None,
+        description="Conditions that define successful completion of this step",
+    )
+    step_type: Optional[str] = Field(
+        default="action", description="Type of step (e.g.,action,decision,validation)"
+    )
+
 
 class ExecutionPlan(BaseModel):
-    task_type:Literal["bug_fix","feature","refactor","analysis","documentation","unknown"]=Field(...,description="Category of the task being executed")
-    objective:str=Field(...,description="High-level goal or purpose of the plan")
-    complexity:Literal["low","medium","high"]=Field(...,description="Estimated complexity level of the task")
-    likely_files:List[str]=Field(default_factory=list,description="Files most likely to be involved in this task")
-    retrieval_queries:List[str]=Field(default_factory=list,description="Queries used to retrieve relevant context or code")
-    steps:List[PlanStep]=Field(default_factory=list,description="Ordered list of steps required to execute the plan")
-    requires_retrieval:bool=Field(...,description="Whether external retrieval is required")
-    reasoning:str=Field(...,description="Explanation of why this plan was generated and its approach")
-    Environment:Literal[
-    "python",
-    "javascript",
-    "typescript",
-    "java",
-    "c",
-    "cpp",
-    "go",
-    "rust",
-    "csharp",
-    "php",
-    "ruby",
-    "kotlin",
-    "swift",
-    "dart",
-    "scala",
-    "r",
-    "lua",
-    "perl",
-    "elixir",
-    "haskell",
-]=Field(...,description="Gives the programming language of the project")
+    task_type: Literal[
+        "bug_fix", "feature", "refactor", "analysis", "documentation", "unknown"
+    ] = Field(..., description="Category of the task being executed")
+    objective: str = Field(..., description="High-level goal or purpose of the plan")
+    complexity: Literal["low", "medium", "high"] = Field(
+        ..., description="Estimated complexity level of the task"
+    )
+    likely_files: List[str] = Field(
+        default_factory=list,
+        description="Files most likely to be involved in this task",
+    )
+    retrieval_queries: List[str] = Field(
+        default_factory=list,
+        description="Queries used to retrieve relevant context or code",
+    )
+    steps: List[PlanStep] = Field(
+        default_factory=list,
+        description="Ordered list of steps required to execute the plan",
+    )
+    requires_retrieval: bool = Field(
+        ..., description="Whether external retrieval is required"
+    )
+    reasoning: str = Field(
+        ..., description="Explanation of why this plan was generated and its approach"
+    )
+    Environment: Literal[
+        "python",
+        "javascript",
+        "typescript",
+        "java",
+        "c",
+        "cpp",
+        "go",
+        "rust",
+        "csharp",
+        "php",
+        "ruby",
+        "kotlin",
+        "swift",
+        "dart",
+        "scala",
+        "r",
+        "lua",
+        "perl",
+        "elixir",
+        "haskell",
+    ] = Field(..., description="Gives the programming language of the project")
 
 
 class SymbolInfo(BaseModel):
@@ -72,12 +97,9 @@ class FileInfo(BaseModel):
     symbols: list[SymbolInfo] = Field(default_factory=list)
 
 
-
 class ProjectSnapshot(BaseModel):
     root_path: str
     files: list[FileInfo] = Field(default_factory=list)
     directories: list[str] = Field(default_factory=list)
     total_files: int = 0
     total_directories: int = 0
-
-

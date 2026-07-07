@@ -1,20 +1,20 @@
 import os
 import sys
-from typing import Type, Dict, Any
+from typing import Any, Dict, Type
+
 from pydantic import BaseModel
+
+from forgeX.tools.file_tools.base_file_tool import BaseFileTool
+from forgeX.tools.file_tools.tools_schema import EditFileInput
 
 sibling_dir = os.path.dirname(__file__)
 if sibling_dir not in sys.path:
     sys.path.insert(0, sibling_dir)
 
-from base_file_tool import BaseFileTool
-from tools_schema import EditFileInput
 
 class EditFileTool(BaseFileTool):
     name: str = "edit_file"
-    description: str = (
-        "Replace old_text with new_text inside a file."
-    )
+    description: str = "Replace old_text with new_text inside a file."
     args_schema: Type[BaseModel] = EditFileInput
 
     def _run(
@@ -36,7 +36,9 @@ class EditFileTool(BaseFileTool):
                 content = f.read()
             count = content.count(old_text)
             if count == 0:
-                return self.error_response(f"Target text '{old_text}' not found in '{path}'.")
+                return self.error_response(
+                    f"Target text '{old_text}' not found in '{path}'."
+                )
             limit = -1 if replace_all else 1
             new_content = content.replace(old_text, new_text, limit)
             with open(resolved_path, "w", encoding="utf-8") as f:
@@ -44,7 +46,7 @@ class EditFileTool(BaseFileTool):
             return self.success_response(
                 message=f"Successfully replaced {count if replace_all else 1} occurrence(s) in '{path}'.",
                 path=path,
-                replacements=count if replace_all else 1
+                replacements=count if replace_all else 1,
             )
         except Exception as e:
             return self.error_response(str(e))

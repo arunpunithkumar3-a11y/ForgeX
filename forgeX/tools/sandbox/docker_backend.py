@@ -2,15 +2,16 @@ import sys
 import time
 from pathlib import Path
 
+import docker
+from docker.models.containers import Container
+
+from forgeX.tools.sandbox.backend import SandboxBackend
+from forgeX.tools.sandbox.models import CommandResult, SandboxConfig
+
 # Add project root to sys.path so 'tools' can be imported when running script directly
 project_root = str(Path(__file__).resolve().parents[2])
 if project_root not in sys.path:
     sys.path.append(project_root)
-
-import docker
-from docker.models.containers import Container
-from tools.sandbox.backend import SandboxBackend
-from tools.sandbox.models import SandboxConfig, CommandResult, SandboxStatus
 
 
 class DockerBackend(SandboxBackend):
@@ -141,8 +142,6 @@ class DockerBackend(SandboxBackend):
             finally:
                 self.container = None
 
-
-
     def execute(
         self,
         command: str,
@@ -161,7 +160,7 @@ class DockerBackend(SandboxBackend):
                 exit_code=-1,
                 stdout="",
                 stderr="Sandbox error: Sandbox container is not running or available.",
-                duration_ms=0.0
+                duration_ms=0.0,
             )
 
         exec_timeout = timeout if timeout is not None else self.config.timeout
@@ -180,8 +179,12 @@ class DockerBackend(SandboxBackend):
             )
             duration = (time.perf_counter() - start) * 1000
             stdout_bytes, stderr_bytes = result.output or (None, None)
-            stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
-            stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
+            stdout = (
+                stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
+            )
+            stderr = (
+                stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
+            )
             return CommandResult(
                 success=result.exit_code == 0,
                 command=command,
@@ -238,6 +241,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Unexpected error occurred: {e}")
     print("Done.")
-
-
-

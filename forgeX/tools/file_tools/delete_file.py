@@ -1,14 +1,15 @@
 import os
 import sys
-from typing import Type, Dict, Any
+from typing import Any, Dict, Type
+
+from base_file_tool import BaseFileTool
 from pydantic import BaseModel
+from tools_schema import DeleteFileInput
 
 sibling_dir = os.path.dirname(__file__)
 if sibling_dir not in sys.path:
     sys.path.insert(0, sibling_dir)
 
-from base_file_tool import BaseFileTool
-from tools_schema import DeleteFileInput
 
 class DeleteFileTool(BaseFileTool):
     name: str = "delete_file"
@@ -25,15 +26,15 @@ class DeleteFileTool(BaseFileTool):
                 return self.error_response(resolved_path)
             if not os.path.exists(resolved_path):
                 return self.success_response(
-                    message=f"File '{path}' is already absent.",
-                    path=path
+                    message=f"File '{path}' is already absent.", path=path
                 )
             if os.path.isdir(resolved_path):
-                return self.error_response(f"Path '{path}' is a directory. DeleteFileTool cannot delete directories.")
+                return self.error_response(
+                    f"Path '{path}' is a directory. DeleteFileTool cannot delete directories."
+                )
             os.remove(resolved_path)
             return self.success_response(
-                message=f"File '{path}' deleted successfully.",
-                path=path
+                message=f"File '{path}' deleted successfully.", path=path
             )
         except Exception as e:
             return self.error_response(str(e))

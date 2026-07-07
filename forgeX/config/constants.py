@@ -1,83 +1,117 @@
 from pathlib import Path
+
 from platformdirs import user_config_dir
 from forgeX.config.models import ProviderMetadata
 
-APP_NAME = "ForgeX"
+# ============================================================================
+# Application
+# ============================================================================
 
-CONFIG_DIR = Path(user_config_dir(APP_NAME, appauthor=False))
-CONFIG_FILE = CONFIG_DIR / "config.toml"
-ENV_FILE = CONFIG_DIR / ".env"
+APP_NAME: str = "ForgeX"
+
 
 # ============================================================================
-# Supported Providers Registry
+# Directories
 # ============================================================================
-PROVIDERS: dict[str, ProviderMetadata] = {
+
+CONFIG_DIR: Path = Path(user_config_dir(APP_NAME))
+
+CONFIG_FILE: Path = CONFIG_DIR / "config.toml"
+
+ENV_FILE: Path = CONFIG_DIR / ".env"
+
+LOGS_DIR: Path = CONFIG_DIR / "logs"
+
+CACHE_DIR: Path = CONFIG_DIR / "cache"
+
+HISTORY_DB: Path = CONFIG_DIR / "history.db"
+
+
+# ============================================================================
+# Provider Metadata
+# ============================================================================
+
+PROVIDERS = {
     "openrouter": ProviderMetadata(
         name="openrouter",
         display_name="OpenRouter",
         api_key_env="OPENROUTER_API_KEY",
         requires_api_key=True,
-        base_url_env="OPENROUTER_BASE_URL",
+        base_url_env=None,
     ),
     "openai": ProviderMetadata(
         name="openai",
         display_name="OpenAI",
         api_key_env="OPENAI_API_KEY",
         requires_api_key=True,
-        base_url_env="OPENAI_BASE_URL",
+        base_url_env=None,
     ),
     "anthropic": ProviderMetadata(
         name="anthropic",
         display_name="Anthropic",
         api_key_env="ANTHROPIC_API_KEY",
         requires_api_key=True,
-        base_url_env="ANTHROPIC_BASE_URL",
+        base_url_env=None,
     ),
-    "gemini": ProviderMetadata(
-        name="gemini",
+    "google": ProviderMetadata(
+        name="google",
         display_name="Google Gemini",
-        api_key_env="GEMINI_API_KEY",
+        api_key_env="GOOGLE_API_KEY",
         requires_api_key=True,
-        base_url_env="GEMINI_BASE_URL",
+        base_url_env=None,
     ),
     "groq": ProviderMetadata(
         name="groq",
         display_name="Groq",
         api_key_env="GROQ_API_KEY",
         requires_api_key=True,
-        base_url_env="GROQ_BASE_URL",
+        base_url_env=None,
     ),
     "nvidia": ProviderMetadata(
         name="nvidia",
         display_name="NVIDIA",
         api_key_env="NVIDIA_API_KEY",
         requires_api_key=True,
-        base_url_env="NVIDIA_BASE_URL",
+        base_url_env=None,
     ),
     "ollama": ProviderMetadata(
         name="ollama",
         display_name="Ollama",
         api_key_env=None,
         requires_api_key=False,
-        base_url_env="OLLAMA_HOST",
+        base_url_env="OLLAMA_BASE_URL",
     ),
 }
 
-# Default configuration dictionary used to initialize config.toml
+SUPPORTED_PROVIDERS: tuple[str, ...] = tuple(PROVIDERS.keys())
+
+
+# ============================================================================
+# Default Configuration
+# ============================================================================
+
 DEFAULT_CONFIG = {
     "llm": {
-        "provider": "openai",
-        "model": "gpt-4o",
+        "provider": "",
+        "model": "",
     },
     "generation": {
         "temperature": 0.2,
         "max_tokens": 4096,
-    }
+    },
 }
 
-# Default environment variables dict generated from PROVIDERS
+
+# ============================================================================
+# Default Environment
+# ============================================================================
+
 DEFAULT_ENV = {
-    prov.api_key_env: ""
-    for prov in PROVIDERS.values()
-    if prov.api_key_env is not None
+    "OPENROUTER_API_KEY": "",
+    "OPENAI_API_KEY": "",
+    "ANTHROPIC_API_KEY": "",
+    "GOOGLE_API_KEY": "",
+    "GROQ_API_KEY": "",
+    "NVIDIA_API_KEY": "",
+    "OLLAMA_BASE_URL": "http://localhost:11434",
 }

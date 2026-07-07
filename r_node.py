@@ -1,13 +1,10 @@
-from metadata_extractor import extract_metadata_from_file
 import os
-from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
-from utils import embeddings
 
+from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
+
+from metadata_extractor import extract_metadata_from_file
+from utils import embeddings
 
 
 def clean_file_metadata_for_vector_db(
@@ -20,7 +17,6 @@ def clean_file_metadata_for_vector_db(
         return documents
 
     for symbol in file_metadata.symbols:
-
         name = symbol.full_name or symbol.name
         symbol_type = symbol.symbol_type or ""
 
@@ -74,16 +70,11 @@ Code:
             "name": name,
             "type": symbol_type,
             "file": file_path,
-
             "parent_symbol": parent_symbol,
-
             "return_type": return_type,
-
             "decorators": ",".join(decorators),
             "bases": ",".join(bases),
-
             "calls": ",".join(calls),
-
             "line_start": symbol.line_start,
             "line_end": symbol.line_end,
         }
@@ -96,8 +87,6 @@ Code:
         )
 
     return documents
-
-
 
 
 def build_index(root_dir: str = "."):
@@ -115,30 +104,17 @@ def build_index(root_dir: str = "."):
     }
 
     for root, dirs, files in os.walk(root_dir):
-
-        dirs[:] = [
-            d for d in dirs
-            if d not in IGNORE_DIRS
-        ]
+        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
 
         for file in files:
-
             if not file.endswith(".py"):
                 continue
 
             file_abs_path = os.path.join(root, file)
 
-            file_rel_path = (
-                os.path.relpath(
-                    file_abs_path,
-                    main_path
-                )
-                .replace("\\", "/")
-            )
+            file_rel_path = os.path.relpath(file_abs_path, main_path).replace("\\", "/")
 
-            data = extract_metadata_from_file(
-                file_abs_path
-            )
+            data = extract_metadata_from_file(file_abs_path)
 
             docs.extend(
                 clean_file_metadata_for_vector_db(
@@ -157,6 +133,8 @@ def build_index(root_dir: str = "."):
         search_type="mmr",
         search_kwargs={"k": 6},
     )
-if __name__ =="__main__":
+
+
+if __name__ == "__main__":
     r = build_index()
     print(r.invoke("i need nodes.py"))
