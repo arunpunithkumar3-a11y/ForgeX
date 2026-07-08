@@ -1,7 +1,7 @@
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
-from typing_extensions import Literal
+
 
 
 class PlanStep(BaseModel):

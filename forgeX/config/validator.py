@@ -39,5 +39,4 @@ class ConfigValidator:
 
         self._validate_provider(config)
         self._validate_model(config)
-
         self._validate_api_key(config)
