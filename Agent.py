@@ -1,28 +1,24 @@
-"""from forgeX.security.models import CommandRequest, ValidationResult
-from utils import DENIED_EXECUTABLES
+import subprocess
 
-
-class SecurityManager:
-    def __init__(self):
-        pass
-
-    def _executable(self, config: CommandRequest) -> bool:
-        exe_command = config.executable
-        if exe_command in DENIED_EXECUTABLES:
-            return ValidationResult(
-                allowed=False, reason=f"Executable {exe_command} is denied"
-            )
-        return ValidationResult(allowed=True)
-
-"""
+from forgeX.tools.Terminal.security.models import CommandArgument, CommandRequest
 
 if __name__ == "__main__":
-    """d = CommandRequest(executable="pip", args=[], cwd="")
-    print(SecurityManager()._executable(d))"""
-    from pathlib import Path
-
-    print(
-        Path("Agent.py")
-        .resolve()
-        .is_relative_to(r"C:\Users\DVS\OneDrive\Desktop\hackerrank")
+    result = subprocess.run(
+        ["pip", "install", "langchain"],
+        capture_output=True,
+        check=True,
+        text=True,
+        shell=False,
     )
+    print(result)
+    d = CommandRequest(
+        executable="pip",
+        args=[
+            CommandArgument(value="install", is_path=False),
+            CommandArgument(value="google", is_path=False),
+        ],
+        cwd="",
+        workspace="",
+        timeout=2,
+    )
+    command = [d.executable] + [x.value for x in d.args]

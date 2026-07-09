@@ -1,15 +1,22 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+@dataclass
+class CommandArgument:
+    value: str
+    is_path: bool = False
 
 
 @dataclass
 class CommandRequest:
     executable: str
-    args: list[str]
+    args: list[CommandArgument]
     cwd: Path
-    working_directory: str
+    workspace: Path
+    timeout: int = Field(gt=0, lt=600)
 
 
 @dataclass
@@ -24,4 +31,3 @@ class CommandResult(BaseModel):
     exit_code: int
     stdout: str
     stderr: str
-    duration_ms: float
