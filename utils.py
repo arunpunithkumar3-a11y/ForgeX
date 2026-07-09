@@ -1,10 +1,5 @@
-from pathlib import Path
-
 from dotenv import load_dotenv
 from langchain_core.documents import Document
-
-from forgeX.tools.sandbox.docker_backend import DockerBackend
-from forgeX.tools.sandbox.models import SandboxConfig
 
 load_dotenv()
 """
@@ -147,23 +142,54 @@ IGNORE_EXTENSIONS = [
 ]
 
 
-def Activate_Container(image_name: str):
-    """
-    Activate the Docker container for the sandbox environment.
-    This function checks if the container is already running and starts it if necessary.
-    """
-
-    config = SandboxConfig(
-        image=image_name,
-        container_name="sandbox_container",
-        working_directory="/workspace",
-        workspace=Path.cwd(),
-        auto_remove=True,
-    )
-    backend = DockerBackend(config)
-    backend.start()
-    return None
-
-
-if __name__ == "__main__":
-    Activate_Container("python:3.12-slim")
+DENIED_EXECUTABLES = {
+    # Windows shells
+    "cmd",
+    "powershell",
+    "pwsh",
+    # Unix shells
+    "bash",
+    "sh",
+    "zsh",
+    "fish",
+    # Privilege escalation
+    "sudo",
+    "su",
+    "runas",
+    # Remote access
+    "ssh",
+    "scp",
+    "sftp",
+    "telnet",
+    # Downloaders
+    "curl",
+    "wget",
+    "certutil",
+    "bitsadmin",
+    # System management
+    "reg",
+    "regedit",
+    "diskpart",
+    "bcdedit",
+    "mount",
+    "umount",
+    # Dangerous deletion/format utilities
+    "format",
+    "cipher",
+    "takeown",
+    "icacls",
+    # Process management
+    "taskkill",
+    "kill",
+    "pkill",
+    "killall",
+    # Package managers (optional, depending on ForgeX policy)
+    "apt",
+    "apt-get",
+    "yum",
+    "dnf",
+    "pacman",
+    "brew",
+    "choco",
+    "winget",
+}

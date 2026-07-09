@@ -34,7 +34,7 @@ if __name__ == "__main__":
     tool = TerminalTool()
     result = tool.invoke(
         {
-            "command": "python testing.py",
+            "command": "python Agent.py",
             "timeout": 120,
         }
     )
