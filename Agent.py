@@ -1,24 +1,15 @@
-import subprocess
-
-from forgeX.tools.Terminal.security.models import CommandArgument, CommandRequest
+from pathlib import Path
+from forgeX.tools.Terminal.terminal_tool import TerminalTool
 
 if __name__ == "__main__":
-    result = subprocess.run(
-        ["pip", "install", "langchain"],
-        capture_output=True,
-        check=True,
-        text=True,
-        shell=False,
+    # Create the tool, default workspace will be the current directory
+    tool = TerminalTool()
+    result = tool.invoke(
+        {
+            "executable": "python",
+            "args": [{"value": "s.py", "is_path": True}],
+            "cwd": "",
+            "timeout": 120,
+        }
     )
     print(result)
-    d = CommandRequest(
-        executable="pip",
-        args=[
-            CommandArgument(value="install", is_path=False),
-            CommandArgument(value="google", is_path=False),
-        ],
-        cwd="",
-        workspace="",
-        timeout=2,
-    )
-    command = [d.executable] + [x.value for x in d.args]

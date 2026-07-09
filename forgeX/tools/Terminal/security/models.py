@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
+
 
 
 @dataclass
@@ -10,13 +12,19 @@ class CommandArgument:
     is_path: bool = False
 
 
-@dataclass
-class CommandRequest:
+class CommandRequest(BaseModel):
     executable: str
-    args: list[CommandArgument]
+    args: List[CommandArgument]
     cwd: Path
     workspace: Path
-    timeout: int = Field(gt=0, lt=600)
+    timeout: int = Field(default=120, gt=0, lt=600)
+
+
+class TerminalInput(BaseModel):
+    executable: str = Field(description="The executable command to run (e.g., git, python).")
+    args: List[CommandArgument] = Field(default=[], description="Arguments for the command.")
+    cwd: Optional[str] = Field(default=None, description="Relative working directory path within the workspace.")
+    timeout: int = Field(default=120, gt=0, lt=600, description="Command execution timeout in seconds.")
 
 
 @dataclass
@@ -27,7 +35,8 @@ class ValidationResult:
 
 class CommandResult(BaseModel):
     success: bool
-    command: str
+    command: List[str] | str
     exit_code: int
     stdout: str
     stderr: str
+
