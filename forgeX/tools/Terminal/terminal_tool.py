@@ -22,8 +22,7 @@ class TerminalTool(BaseTool):
 
     def _run(
         self,
-        executable: str,
-        args: list[CommandArgument] = [],
+        command:str,
         cwd: Optional[str] = None,
         timeout: int = 120,
     ) -> CommandResult | dict:
@@ -39,8 +38,7 @@ class TerminalTool(BaseTool):
                 cwd_path = workspace_path
 
             config = CommandRequest(
-                executable=executable,
-                args=args,
+                command=command,
                 cwd=cwd_path,
                 workspace=workspace_path,
                 timeout=timeout,
@@ -48,9 +46,9 @@ class TerminalTool(BaseTool):
             security_manager = SecurityManager()
             result = security_manager.validate(config)
             if result.allowed:
-                command = [config.executable] + [arg.value for arg in config.args]
+
                 result = subprocess.run(
-                    command,
+                    config.command,
                     capture_output=True,
                     check=False,
                     cwd=config.cwd,
@@ -65,6 +63,7 @@ class TerminalTool(BaseTool):
                     stdout=result.stdout,
                     stderr=result.stderr,
                 )
+
             else:
                 return result
         except Exception as e:
@@ -78,10 +77,9 @@ if __name__ == "__main__":
     tool = TerminalTool()
     result = tool.invoke(
         {
-            "executable": "python",
-            "args": [{"value": "s.py", "is_path": True}],
-            "cwd": "",
-            "timeout": 120,
+            "command":"python s.py",
+            "cwd":r"C:\Users\DVS\OneDrive\Desktop\hackerrank",
+            "timeout":500
         }
     )
     print(result)

@@ -7,12 +7,18 @@ from forgeX.agents.Schemas import ExecutionPlan
 
 load_dotenv()
 
+
+
 planner_llm = ChatOpenAI(
     model = os.getenv('OPEN_AI_MODEL'),
     base_url = os.getenv('MODEL_BASE_URL'),
     api_key = os.getenv('OPEN_AI_KEY'),
 )
-
+llm = ChatOpenAI(
+    model = os.getenv('OPEN_AI_MODEL'),
+    base_url = os.getenv('MODEL_BASE_URL'),
+    api_key = os.getenv('OPEN_AI_KEY'),
+)
 parser = PydanticOutputParser(pydantic_object=ExecutionPlan)
 
 chain = (

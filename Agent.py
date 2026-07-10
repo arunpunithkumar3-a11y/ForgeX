@@ -1,15 +1,13 @@
 from pathlib import Path
-from forgeX.tools.Terminal.terminal_tool import TerminalTool
+
+from forgeX.tools.ripgrep_tool.models import SearchRequest
+from forgeX.tools.ripgrep_tool.parser import build_rg_command
 
 if __name__ == "__main__":
-    # Create the tool, default workspace will be the current directory
-    tool = TerminalTool()
-    result = tool.invoke(
-        {
-            "executable": "python",
-            "args": [{"value": "s.py", "is_path": True}],
-            "cwd": "",
-            "timeout": 120,
-        }
+    req = SearchRequest(
+        pattern="TODO",
+        root=Path("."),
+        file_globs=["*.py", "*.md"],
+        exclude_globs=["tests/", "build/"],
     )
-    print(result)
+    print(build_rg_command(req))
