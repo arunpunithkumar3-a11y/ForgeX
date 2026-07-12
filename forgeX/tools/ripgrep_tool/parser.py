@@ -5,9 +5,6 @@ def build_rg_command(req: SearchRequest) -> list[str]:
     if not req.pattern.strip():
         raise ValueError("Search pattern cannot be empty.")
 
-    # We validate existence and directory status of root outside in the tool,
-    # but we can do a sanity check here.
-
     cmd = [
         "rg",
         "--json",

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -38,16 +37,24 @@ class SearchRequest(BaseModel):
     )
 
 
-@dataclass(slots=True)
-class SearchResult:
-    file: str  # Kept as str/Path, but str is easier to serialize. We can keep it Path or str.
-    line: int
-    column: int
-    text: str
+class SubMatch(BaseModel):
+    text: str = Field(..., description="The exact matched substring within the line")
+    start: int = Field(
+        ...,
+        description="The starting character index (0-based) of the match within the line",
+    )
+    end: int = Field(
+        ...,
+        description="The ending character index (exclusive) of the match within the line",
+    )
 
 
-@dataclass(slots=True)
-class SearchResponse:
-    results: list[SearchResult]
-    total_matches: int
-    searched_path: str
+class RipGrepResult(BaseModel):
+    path: Path = Field(..., description="The file path where the match was found")
+    lines: str = Field(..., description="The full line of text containing the match")
+    line_number: int = Field(
+        ..., description="The line number in the file where the match occurred"
+    )
+    submatches: list[SubMatch] = Field(
+        ..., description="List of exact substring matches found within the line"
+    )

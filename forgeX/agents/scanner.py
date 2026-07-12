@@ -1,7 +1,6 @@
 import os
 
 from forgeX.agents.Schemas import FileInfo, ProjectSnapshot
-from metadata_extractor import extract_metadata_from_file
 from utils import IGNORE_DIRS, IGNORE_EXTENSIONS, IGNORE_FILES
 
 
@@ -52,22 +51,12 @@ class ScanRepo:
                     except OSError:
                         continue
 
-                    if ext == ".py":
-                        from dataclasses import asdict
-
-                        data = asdict(extract_metadata_from_file(file_rel_path))
-                    else:
-                        data = {"imports": [], "full_imports": [], "symbols": []}
-
                     self.files_list.append(
                         FileInfo(
                             path=file_rel_path,
                             extension=ext,
                             size_bytes=file_size,
                             lines_count=lines_count,
-                            imports=data["imports"],
-                            full_imports=data["full_imports"],
-                            symbols=data["symbols"],
                         )
                     )
 
