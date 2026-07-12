@@ -1,4 +1,6 @@
 from pathlib import Path
+from typing import Annotated
+from langgraph.prebuilt import InjectedState
 
 from pydantic import BaseModel, Field
 
@@ -8,6 +10,7 @@ class SearchRequest(BaseModel):
     root: Path = Field(
         default=Path("."), description="The root directory to search in."
     )
+    workspace: Annotated[str, InjectedState("workspace")] = "."
 
     literal: bool = Field(
         default=True,

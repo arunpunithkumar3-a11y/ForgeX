@@ -1,10 +1,11 @@
 import os
 
-from forgeX.agents.Schemas import FileInfo, ProjectSnapshot
+from forgeX.core.agents.backend import ServiceClass
+from forgeX.core.agents.Schemas import FileInfo, ProjectSnapshot
 from utils import IGNORE_DIRS, IGNORE_EXTENSIONS, IGNORE_FILES
 
 
-class ScanRepo:
+class ScannerService(ServiceClass):
     def __init__(self, root_dir: str = "."):
         self.root_dir = root_dir
         self.abs_path = os.path.abspath(root_dir)
@@ -12,7 +13,7 @@ class ScanRepo:
         self.files_list = []
         self.dirs_list = []
 
-    def scan(self) -> ProjectSnapshot:
+    def invoke(self) -> ProjectSnapshot:
         try:
             for root, dirs, files in os.walk(self.root_dir):
                 dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]

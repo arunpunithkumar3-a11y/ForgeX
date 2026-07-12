@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional,Literal
+from typing import List, Optional, Literal, Annotated
+from langgraph.prebuilt import InjectedState
 
 from pydantic import BaseModel, Field
 
@@ -23,6 +24,7 @@ class TerminalInput(BaseModel):
     command:str=Field(description="command needed to execute")
     cwd: Optional[str] = Field(default=None, description="Relative working directory path within the workspace.")
     timeout: int = Field(default=120, gt=0, lt=600, description="Command execution timeout in seconds.")
+    workspace: Annotated[str, InjectedState("workspace")] = "."
 
 
 

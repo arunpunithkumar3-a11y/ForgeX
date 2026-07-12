@@ -33,8 +33,9 @@ class RipGrepSearchTool(BaseTool):
         file_globs: list[str] | None = None,
         exclude_globs: list[str] | None = None,
         max_results: int = 200,
+        workspace: str = ".",
     ) -> Dict[str, Any]:
-        workspace_path = Path(self.workspace).resolve()
+        workspace_path = Path(workspace).resolve()
 
         root_path = Path(root)
         if not root_path.is_absolute():

@@ -1,9 +1,9 @@
 import os
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
-from forgeX.agents.prompts import PLANNER_PROMPT
+from forgeX.core.agents.prompts import PLANNER_PROMPT
 from langchain_core.output_parsers import PydanticOutputParser
-from forgeX.agents.Schemas import ExecutionPlan
+from forgeX.core.agents.Schemas import ExecutionPlan
 
 load_dotenv()
 

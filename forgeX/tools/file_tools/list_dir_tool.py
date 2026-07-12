@@ -22,9 +22,9 @@ class ListDirectoryTool(BaseFileTool):
     description: str = "Gives all the folder and files in the workspace"
     args_schema: Type[BaseModel] = ListDirectoryInput
 
-    def _run(self, path: str = ".") -> Dict[str, Any]:
+    def _run(self, path: str = ".", workspace: str = ".") -> Dict[str, Any]:
         try:
-            resolved_path = self.resolve_path(path)
+            resolved_path = self.resolve_path(path, workspace)
             if resolved_path.startswith("Access outside workspace"):
                 return self.error_response(resolved_path)
             if not os.path.exists(resolved_path):
@@ -33,12 +33,12 @@ class ListDirectoryTool(BaseFileTool):
                 return self.error_response(f"Path '{path}' is not a directory.")
             folders = []
             files = []
-            ws_path = os.path.abspath(self.workspace)
+            ws_path = os.path.abspath(workspace)
             for root, dirs, filenames in os.walk(resolved_path):
                 dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
                 for d in dirs:
                     abs_dir = os.path.join(root, d)
-                    res_path = self.resolve_path(os.path.relpath(abs_dir, ws_path))
+                    res_path = self.resolve_path(os.path.relpath(abs_dir, ws_path), workspace)
                     if res_path.startswith("Access outside workspace"):
                         continue
                     rel_dir = os.path.relpath(abs_dir, ws_path).replace("\\", "/")
@@ -50,7 +50,7 @@ class ListDirectoryTool(BaseFileTool):
                     if ext in IGNORE_EXTENSIONS:
                         continue
                     abs_file = os.path.join(root, f)
-                    res_path = self.resolve_path(os.path.relpath(abs_file, ws_path))
+                    res_path = self.resolve_path(os.path.relpath(abs_file, ws_path), workspace)
                     if res_path.startswith("Access outside workspace"):
                         continue
                     rel_file = os.path.relpath(abs_file, ws_path).replace("\\", "/")

@@ -1,6 +1,6 @@
 import os
 
-from forgeX.agents.Schemas import FileInfo, ProjectSnapshot
+from forgeX.core.agents.Schemas import FileInfo, ProjectSnapshot
 from utils import IGNORE_DIRS, IGNORE_EXTENSIONS, IGNORE_FILES
 
 

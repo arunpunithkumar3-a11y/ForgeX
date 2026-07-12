@@ -5,8 +5,9 @@ from langchain_core.tools import BaseTool
 class BaseFileTool(BaseTool):
     workspace: str = "."
 
-    def resolve_path(self, path: str) -> str:
-        abs_workspace = os.path.abspath(self.workspace)
+    def resolve_path(self, path: str, workspace: str = None) -> str:
+        target_workspace = workspace if workspace is not None else self.workspace
+        abs_workspace = os.path.abspath(target_workspace)
         abs_target = os.path.abspath(os.path.join(abs_workspace, path))
         try:
             common = os.path.commonpath([abs_workspace, abs_target])

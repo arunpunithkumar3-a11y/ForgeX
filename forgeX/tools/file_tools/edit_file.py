@@ -23,9 +23,10 @@ class EditFileTool(BaseFileTool):
         old_text: str,
         new_text: str,
         replace_all: bool = False,
+        workspace: str = ".",
     ) -> Dict[str, Any]:
         try:
-            resolved_path = self.resolve_path(path)
+            resolved_path = self.resolve_path(path, workspace)
             if resolved_path.startswith("Access outside workspace"):
                 return self.error_response(resolved_path)
             if not os.path.exists(resolved_path):

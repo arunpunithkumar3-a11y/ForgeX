@@ -17,9 +17,9 @@ class WriteFileTool(BaseFileTool):
     description: str = "Completely overwrite a file with new content. Creates the file if it does not exist."
     args_schema: Type[BaseModel] = WriteFileInput
 
-    def _run(self, path: str, content: str) -> Dict[str, Any]:
+    def _run(self, path: str, content: str, workspace: str = ".") -> Dict[str, Any]:
         try:
-            resolved_path = self.resolve_path(path)
+            resolved_path = self.resolve_path(path, workspace)
             if resolved_path.startswith("Access outside workspace"):
                 return self.error_response(resolved_path)
             if os.path.exists(resolved_path) and os.path.isdir(resolved_path):

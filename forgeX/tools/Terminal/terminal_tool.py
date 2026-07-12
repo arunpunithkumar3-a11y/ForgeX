@@ -25,9 +25,10 @@ class TerminalTool(BaseTool):
         command:str,
         cwd: Optional[str] = None,
         timeout: int = 120,
+        workspace: str = ".",
     ) -> CommandResult | dict:
         try:
-            workspace_path = Path(self.workspace).resolve()
+            workspace_path = Path(workspace).resolve()
             if cwd:
                 cwd_path = Path(cwd)
                 if not cwd_path.is_absolute():
