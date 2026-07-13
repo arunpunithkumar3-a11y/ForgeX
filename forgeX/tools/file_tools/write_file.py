@@ -18,6 +18,7 @@ class WriteFileTool(BaseFileTool):
     args_schema: Type[BaseModel] = WriteFileInput
 
     def _run(self, path: str, content: str, workspace: str = ".") -> Dict[str, Any]:
+        print(f"Executing tool: {self.name} on {path}")
         try:
             resolved_path = self.resolve_path(path, workspace)
             if resolved_path.startswith("Access outside workspace"):
@@ -31,8 +32,6 @@ class WriteFileTool(BaseFileTool):
                 os.makedirs(parent_dir, exist_ok=True)
             with open(resolved_path, "w", encoding="utf-8") as f:
                 f.write(content)
-            return self.success_response(
-                message=f"File written successfully at '{path}'.", path=path
-            )
+            return "File created successfully"
         except Exception as e:
             return self.error_response(str(e))

@@ -32,9 +32,10 @@ class RipGrepSearchTool(BaseTool):
         include_hidden: bool = False,
         file_globs: list[str] | None = None,
         exclude_globs: list[str] | None = None,
-        max_results: int = 200,
+        max_results: int = 20,
         workspace: str = ".",
     ) -> Dict[str, Any]:
+        print(f"Executing tool: {self.name} with pattern='{pattern}'")
         workspace_path = Path(workspace).resolve()
 
         root_path = Path(root)
@@ -77,7 +78,8 @@ class RipGrepSearchTool(BaseTool):
             result = subprocess.run(
                 command,
                 capture_output=True,
-                text=True,
+                encoding="utf-8",
+                errors="replace",
                 check=False,
                 shell=False,
             )
@@ -95,6 +97,7 @@ class RipGrepSearchTool(BaseTool):
             }
 
         parsed_results = []
+        import os
 
         for line in result.stdout.splitlines():
             if not line:
@@ -109,28 +112,31 @@ class RipGrepSearchTool(BaseTool):
                 continue
 
             data = event["data"]
-
             path_str = _get_text(data["path"])
 
-            parsed_results.append(
-                {
-                    "path": path_str,
-                    "lines": _get_text(data["lines"]),
-                    "line_number": data["line_number"],
-                    "submatches": [
-                        {
-                            "text": _get_text(match["match"]),
-                            "start": match["start"],
-                            "end": match["end"],
-                        }
-                        for match in data["submatches"]
-                    ],
-                }
-            )
+            try:
+                rel_path = os.path.relpath(path_str, workspace)
+            except Exception:
+                rel_path = path_str
+
+            line_content = _get_text(data["lines"]).strip()
+            if len(line_content) > 150:
+                line_content = line_content[:150] + "... [TRUNCATED]"
+
+            parsed_results.append(f"{rel_path}:{data['line_number']}: {line_content}")
+
+        total_matches = len(parsed_results)
+        display_limit = min(30, max_results)
+        truncated_results = parsed_results[:display_limit]
+
+        summary = f"Found {total_matches} matches."
+        if total_matches > display_limit:
+            summary += f" Showing first {display_limit} matches. Please refine your query to narrow down results."
 
         return {
             "success": True,
-            "results": parsed_results,
+            "summary": summary,
+            "results": truncated_results,
         }
 
     async def _arun(self, *args: Any, **kwargs: Any) -> Any:

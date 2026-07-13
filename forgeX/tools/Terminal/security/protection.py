@@ -1,25 +1,39 @@
 import os
-from pathlib import Path
+
 from dotenv import load_dotenv
-
-
 from langchain_core.output_parsers import PydanticOutputParser
-from testing import llm
+from langchain_openai import ChatOpenAI
+
 from forgeX.tools.Terminal.security.models import CommandRequest, ValidationResult
 from forgeX.tools.Terminal.security.prompts import security_prompt
+
+load_dotenv()
+
+api_key = (
+    os.environ.get("OPEN_AI_KEY") or os.environ.get("OPENAI_API_KEY") or "dummy_key"
+)
+
+model_name = os.getenv("OPEN_AI_MODEL") or "openrouter/free"
+
+LLM = ChatOpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    model=model_name,
+    api_key=api_key,
+)
+
 
 class SecurityManager:
     def __init__(self):
         self.parser = PydanticOutputParser(pydantic_object=ValidationResult)
-        self.chain = security_prompt | llm | self.parser
+        self.chain = security_prompt | LLM | self.parser
 
     def validate(self, config: CommandRequest) -> ValidationResult:
         try:
             input_data = {
-                "command":str(config.command),
+                "command": str(config.command),
                 "cwd": str(config.cwd),
                 "workspace": str(config.workspace),
-                "timeout": config.timeout
+                "timeout": config.timeout,
             }
             response = self.chain.invoke(input_data)
             return response
@@ -27,9 +41,5 @@ class SecurityManager:
             return ValidationResult(
                 allowed=False,
                 risk="critical",
-                reason=f"Validation failed with error: {str(e)}"
+                reason=f"Validation failed with error: {str(e)}",
             )
-
-
-
-        

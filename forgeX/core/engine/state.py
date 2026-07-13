@@ -11,7 +11,3 @@ class AgentState(TypedDict):
     workspace: str
     project_snapshot: ProjectSnapshot
     execution_plan: ExecutionPlan
-    observations: List[str]
-    modified_files: List[str]
-    iteration: int
-    response: str

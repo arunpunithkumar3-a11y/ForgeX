@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Annotated
-from langgraph.prebuilt import InjectedState
 
+from langgraph.prebuilt import InjectedState
 from pydantic import BaseModel, Field
 
 
@@ -40,24 +40,9 @@ class SearchRequest(BaseModel):
     )
 
 
-class SubMatch(BaseModel):
-    text: str = Field(..., description="The exact matched substring within the line")
-    start: int = Field(
-        ...,
-        description="The starting character index (0-based) of the match within the line",
-    )
-    end: int = Field(
-        ...,
-        description="The ending character index (exclusive) of the match within the line",
-    )
-
-
 class RipGrepResult(BaseModel):
     path: Path = Field(..., description="The file path where the match was found")
     lines: str = Field(..., description="The full line of text containing the match")
     line_number: int = Field(
         ..., description="The line number in the file where the match occurred"
-    )
-    submatches: list[SubMatch] = Field(
-        ..., description="List of exact substring matches found within the line"
     )

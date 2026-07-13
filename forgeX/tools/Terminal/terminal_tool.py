@@ -1,12 +1,11 @@
 import subprocess
 from pathlib import Path
-from typing import Type, Optional
+from typing import Optional, Type
 
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel
 
 from forgeX.tools.Terminal.security.models import (
-    CommandArgument,
     CommandRequest,
     CommandResult,
     TerminalInput,
@@ -22,11 +21,12 @@ class TerminalTool(BaseTool):
 
     def _run(
         self,
-        command:str,
+        command: str,
         cwd: Optional[str] = None,
         timeout: int = 120,
         workspace: str = ".",
     ) -> CommandResult | dict:
+        print(f"Executing tool: {self.name} with command='{command}'")
         try:
             workspace_path = Path(workspace).resolve()
             if cwd:
@@ -47,13 +47,13 @@ class TerminalTool(BaseTool):
             security_manager = SecurityManager()
             result = security_manager.validate(config)
             if result.allowed:
-
                 result = subprocess.run(
                     config.command,
                     capture_output=True,
                     check=False,
                     cwd=config.cwd,
-                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
                     shell=False,
                     timeout=config.timeout,
                 )
@@ -78,10 +78,9 @@ if __name__ == "__main__":
     tool = TerminalTool()
     result = tool.invoke(
         {
-            "command":"python s.py",
-            "cwd":r"C:\Users\DVS\OneDrive\Desktop\hackerrank",
-            "timeout":500
+            "command": "python s.py",
+            "cwd": r"C:\Users\DVS\OneDrive\Desktop\hackerrank",
+            "timeout": 500,
         }
     )
     print(result)
-

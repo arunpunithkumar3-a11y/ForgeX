@@ -25,6 +25,7 @@ class EditFileTool(BaseFileTool):
         replace_all: bool = False,
         workspace: str = ".",
     ) -> Dict[str, Any]:
+        print(f"Executing tool: {self.name} on {path}")
         try:
             resolved_path = self.resolve_path(path, workspace)
             if resolved_path.startswith("Access outside workspace"):

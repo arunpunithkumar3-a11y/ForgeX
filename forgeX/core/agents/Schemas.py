@@ -38,7 +38,7 @@ class ExecutionPlan(BaseModel):
 
     likely_files: List[str] = Field(
         default_factory=list,
-        description="Relative paths of files that are most likely relevant to completing the task.",
+        description="The files which can help for the project, which we get data from project_snapshot. Must contain ONLY file paths that are explicitly listed in the project snapshot.",
     )
 
     steps: List[PlanStep] = Field(
